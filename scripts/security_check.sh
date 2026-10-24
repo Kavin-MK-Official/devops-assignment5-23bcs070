@@ -31,7 +31,8 @@ else
   pass "only db-secret.example.yaml is tracked; the real Secret is created at runtime"
 fi
 kubectl -n technova get secret technova-db-secret \
-  -o custom-columns='NAME:.metadata.name,TYPE:.type,KEYS:.data' 2>/dev/null \
+  -o jsonpath='Secret {.metadata.name} type={.type} keys={.data} -> values redacted{"\n"}' 2>/dev/null \
+  | sed -E "s/keys=\{[^}]*\}/keys=[redacted]/" \
   || info "cluster Secret not available in this environment"
 
 echo "-- 3. Container runs as a non-root user --"
@@ -66,10 +67,10 @@ else
 fi
 
 echo "-- 7. Pipeline credentials come from Jenkins, not the repository --"
-if grep -q 'credentialsId' Jenkinsfile jenkins/casc/jenkins.yaml; then
+if grep -qE 'credentialsId|credentials\(' Jenkinsfile jenkins/casc/jenkins.yaml; then
   pass "Git access uses the Jenkins credential 'github-kavin'"
 else
-  fail "no credentialsId reference found"
+  fail "no Jenkins credential reference found"
 fi
 if grep -RInE 'ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}' . --exclude-dir=.git >/dev/null 2>&1; then
   fail "a GitHub token literal was found in the working tree"

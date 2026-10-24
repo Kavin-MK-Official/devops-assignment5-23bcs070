@@ -36,8 +36,8 @@ docker run -d --name jenkins-a5 \
   -e JAVA_OPTS="-Djenkins.install.runSetupWizard=false -Duser.timezone=UTC" \
   -e JENKINS_OPTS="--httpPort=8088" \
   -e KUBECONFIG=/home/kavin/.kube/config \
-  -e GITHUB_TOKEN \
-  -e JENKINS_ADMIN_PASSWORD \
+  -e GITHUB_TOKEN="$GITHUB_TOKEN" \
+  -e JENKINS_ADMIN_PASSWORD="$JENKINS_ADMIN_PASSWORD" \
   -v /home/kavin/jenkins_home:/home/kavin/jenkins_home \
   -v /home/kavin/.kube:/home/kavin/.kube:ro \
   -v /var/run/docker.sock:/var/run/docker.sock \

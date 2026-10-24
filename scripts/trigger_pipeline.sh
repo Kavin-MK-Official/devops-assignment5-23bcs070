@@ -8,7 +8,13 @@ JENKINS_URL="http://localhost:8088"
 JOB="technova-assignment5"
 
 echo "Triggering $JOB ..."
-curl -fsS -u "admin:$JENKINS_ADMIN_PASSWORD" -X POST "$JENKINS_URL/job/$JOB/build"
+COOKIE_JAR="$(mktemp)"
+CRUMB_JSON="$(curl -fsS -c "$COOKIE_JAR" -u "admin:$JENKINS_ADMIN_PASSWORD" "$JENKINS_URL/crumbIssuer/api/json")"
+CRUMB="$(printf '%s' "$CRUMB_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["crumb"])')"
+CRUMB_FIELD="$(printf '%s' "$CRUMB_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["crumbRequestField"])')"
+curl -fsS -b "$COOKIE_JAR" -u "admin:$JENKINS_ADMIN_PASSWORD" \
+  -H "$CRUMB_FIELD: $CRUMB" -X POST "$JENKINS_URL/job/$JOB/build"
+rm -f "$COOKIE_JAR"
 echo "build queued"
 
 for _ in $(seq 1 120); do
