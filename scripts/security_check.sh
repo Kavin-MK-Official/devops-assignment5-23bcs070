@@ -31,8 +31,7 @@ else
   pass "only db-secret.example.yaml is tracked; the real Secret is created at runtime"
 fi
 kubectl -n technova get secret technova-db-secret \
-  -o jsonpath='Secret {.metadata.name} type={.type} keys={.data} -> values redacted{"\n"}' 2>/dev/null \
-  | sed -E "s/keys=\{[^}]*\}/keys=[redacted]/" \
+  -o jsonpath='Secret {.metadata.name} type={.type} keys=[redacted]{"\n"}' 2>/dev/null \
   || info "cluster Secret not available in this environment"
 
 echo "-- 3. Container runs as a non-root user --"

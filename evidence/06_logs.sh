@@ -13,4 +13,4 @@ sleep 1
 kubectl -n technova logs "$POD" --tail=8
 echo
 echo "--- client error: HTTP $(curl -s -o /dev/null -w '%{http_code}' http://localhost:8081/does-not-exist) for /does-not-exist ---"
-kubectl -n technova logs "$POD" --tail=6 | grep 'does-not-exist'
+kubectl -n technova logs -l app=technova-web --since=120s --prefix | grep 'does-not-exist' | tail -2
