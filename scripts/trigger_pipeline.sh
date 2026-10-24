@@ -33,11 +33,17 @@ for _ in $(seq 1 120); do
 done
 
 echo "--- stage results ---"
-curl -fsS -u "admin:$JENKINS_ADMIN_PASSWORD" \
-  "$JENKINS_URL/job/$JOB/lastBuild/wfapi/describe" \
-  | python3 -c '
-import json, sys
-data = json.load(sys.stdin)
+if curl -fsS -u "admin:$JENKINS_ADMIN_PASSWORD" \
+     "$JENKINS_URL/job/$JOB/lastBuild/wfapi/describe" -o /tmp/stages.json 2>/dev/null; then
+  python3 -c '
+import json
+data = json.load(open("/tmp/stages.json"))
 for stage in data.get("stages", []):
     print("%-32s %-10s %.1fs" % (stage["name"], stage["status"], stage.get("durationMillis", 0) / 1000))
 '
+else
+  echo "(pipeline-stage-view plugin not installed: stage names from the build log)"
+  curl -fsS -u "admin:$JENKINS_ADMIN_PASSWORD" "$JENKINS_URL/job/$JOB/lastBuild/consoleText" \
+    | grep -oE '\[Pipeline\] \{ \(.*' \
+    | sed -E 's/\[Pipeline\] \{ \(//; s/\)$//'
+fi

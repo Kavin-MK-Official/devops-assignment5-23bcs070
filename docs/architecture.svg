@@ -56,14 +56,16 @@
   <line x1="940" y1="170" x2="966" y2="170" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
 
   <!-- Ansible touchpoint -->
-  <rect x="250" y="268" width="460" height="74" rx="12" fill="#fdf4ff" stroke="#e9d5ff"/>
+  <rect x="250" y="268" width="460" height="84" rx="12" fill="#fdf4ff" stroke="#e9d5ff"/>
   <text x="268" y="294" font-size="12" font-weight="700" fill="#7e22ce">STAGE 5a · CONFIG AUTOMATION (ASSIGNMENT 4 HAND-OFF)</text>
-  <text x="268" y="318" font-size="13.5" fill="#0f172a">Ansible renders web-deployment.yaml from the CI image tag, then kubectl apply + rollout status</text>
+  <text x="268" y="316" font-size="12.5" fill="#0f172a">Ansible renders web-deployment.yaml from the CI image tag,</text>
+  <text x="268" y="335" font-size="12.5" fill="#0f172a">then kubectl apply + rollout status</text>
 
   <!-- Service exposure -->
-  <rect x="750" y="268" width="390" height="74" rx="12" fill="#f0fdf4" stroke="#86efac"/>
+  <rect x="750" y="268" width="390" height="84" rx="12" fill="#f0fdf4" stroke="#86efac"/>
   <text x="768" y="294" font-size="12" font-weight="700" fill="#15803d">STAGE 6 · SERVICE EXPOSURE (AUTOMATED)</text>
-  <text x="768" y="318" font-size="13.5" fill="#0f172a">Service technova-web → NodePort 30080 → host 8081 → http://localhost:8081</text>
+  <text x="768" y="316" font-size="12.5" fill="#0f172a">Service technova-web → NodePort 30080</text>
+  <text x="768" y="335" font-size="12.5" fill="#0f172a">browser → http://localhost:8081</text>
 
   <line x1="1055" y1="230" x2="1000" y2="264" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
   <line x1="480" y1="230" x2="480" y2="264" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>

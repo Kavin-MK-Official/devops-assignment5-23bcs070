@@ -24,7 +24,7 @@ print(r[0]["value"][1] if r else "no data")
 echo "Live Prometheus queries:"
 q "up{job=\"technova-web\"}" 'up{job="technova-web"}'
 q "sum(rate(http_requests_total[5m]))" 'sum(rate(http_requests_total[5m]))'
-q "histogram_quantile(0.95, ...duration_seconds_bucket)" 'histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))'
+q "avg request latency 5m (s)" 'sum(rate(http_request_duration_seconds_sum[5m])) / sum(rate(http_request_duration_seconds_count[5m]))'
 q "max(technova_db_up)" 'max(technova_db_up)'
 q "max(technova_app_info)" 'max(technova_app_info)'
 echo

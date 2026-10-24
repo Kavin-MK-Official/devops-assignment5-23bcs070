@@ -13,15 +13,10 @@ echo "-----------------------------+--------------------------------------------
 COMMIT="$(git log -1 --pretty='%h %s' 2>/dev/null || echo 'n/a')"
 row "Checkout" "git log -1" "OK - $COMMIT"
 
-STAGE_STATUS="$(curl -fsS -u "admin:$JENKINS_ADMIN_PASSWORD" \
-  "$JENKINS_URL/job/technova-assignment5/lastBuild/wfapi/describe" 2>/dev/null \
-  | python3 -c '
-import json,sys
-d=json.load(sys.stdin)
-st={s["name"]:s["status"] for s in d.get("stages",[])}
-print(st.get("Build & Test","unknown"))
-' || echo unknown)"
-row "Build and test" "pytest in python:3.12-slim (Jenkins)" "OK - $STAGE_STATUS"
+BUILD_RESULT="$(curl -fsS -u "admin:$JENKINS_ADMIN_PASSWORD" \
+  "$JENKINS_URL/job/technova-assignment5/lastBuild/api/json" \
+  | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"])' || echo unknown)"
+row "Build and test" "pytest in python:3.12-slim (Jenkins)" "OK - build $BUILD_RESULT"
 
 TAG="$(kubectl -n technova get deployment technova-web -o jsonpath='{.spec.template.spec.containers[0].image}')"
 row "Docker image build/tag" "docker build --build-arg APP_VERSION" "OK - $TAG"
