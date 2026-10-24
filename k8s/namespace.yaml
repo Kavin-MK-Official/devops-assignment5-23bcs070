@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: technova
+  labels:
+    app.kubernetes.io/part-of: technova
+    roll: "23bcs070"

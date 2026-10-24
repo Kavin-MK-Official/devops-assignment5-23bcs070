@@ -1,0 +1,54 @@
+# ---------------------------------------------------------------------------
+# Jenkins Configuration as Code (JCasC) - Assignment 5, 23BCS070
+#
+# Secrets are injected as environment variables at container start and are
+# never written into this file. The GitHub token only has repo scope and is
+# used by the Git plugin to clone the private assignment repository.
+# ---------------------------------------------------------------------------
+jenkins:
+  systemMessage: "TechNova Solutions - DevOps Mastery Assignment 5 (23BCS070)"
+  numExecutors: 2
+  mode: NORMAL
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+  remotingSecurity:
+    enabled: true
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope: GLOBAL
+              id: "github-kavin"
+              description: "GitHub account Kavin-MK-Official (repo scope, lab use)"
+              username: "Kavin-MK-Official"
+              password: "${GITHUB_TOKEN}"
+
+jobs:
+  - script: >
+      pipelineJob('technova-assignment5') {
+        description('CI/CD pipeline for the TechNova web application - built, tested, containerised and deployed to kind.')
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/Kavin-MK-Official/devops-assignment5-23bcs070.git')
+                  credentialsId('github-kavin')
+                }
+                branch('*/main')
+              }
+            }
+            scriptPath('Jenkinsfile')
+            lightweight(true)
+          }
+        }
+      }

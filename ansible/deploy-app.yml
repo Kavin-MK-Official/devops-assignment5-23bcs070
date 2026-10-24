@@ -1,0 +1,41 @@
+# ---------------------------------------------------------------------------
+# Configuration automation touchpoint (carried over from Assignment 4).
+# Jenkins renders the Kubernetes Deployment from the image tag it just built
+# and applies it, so the deployment manifest is generated from pipeline
+# values instead of being hand-edited.
+# ---------------------------------------------------------------------------
+- name: Render and deploy the TechNova web tier
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    namespace: technova
+    deployment: technova-web
+    image_repo: technova-web-23bcs070
+    image_tag: "1.0.0"
+    replicas: 3
+    rendered_manifest: /tmp/technova-web-deployment-rendered.yaml
+
+  tasks:
+    - name: Render Deployment manifest with the CI image tag
+      ansible.builtin.template:
+        src: templates/web-deployment.yaml.j2
+        dest: "{{ rendered_manifest }}"
+        mode: "0644"
+
+    - name: Show the rendered image reference
+      ansible.builtin.command: >
+        grep -E 'image:|replicas:' {{ rendered_manifest }}
+      register: rendered
+      changed_when: false
+
+    - name: Apply the rendered Deployment
+      ansible.builtin.command: kubectl apply -f {{ rendered_manifest }}
+      register: applied
+      changed_when: "'unchanged' not in applied.stdout"
+
+    - name: Wait for the rollout to finish
+      ansible.builtin.command: >
+        kubectl -n {{ namespace }} rollout status deployment/{{ deployment }} --timeout=180s
+      changed_when: false

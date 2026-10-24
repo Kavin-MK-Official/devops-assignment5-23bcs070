@@ -1,0 +1,88 @@
+# ---------------------------------------------------------------------------
+# PostgreSQL for the TechNova application (Assignment 5)
+# The password is read from the technova-db-secret Secret; it is never stored
+# in this manifest or in the Git repository.
+# ---------------------------------------------------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: technova-db-pvc
+  namespace: technova
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: technova-db
+  namespace: technova
+  labels:
+    app: technova-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: technova-db
+  template:
+    metadata:
+      labels:
+        app: technova-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - name: postgres
+              containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: technova
+            - name: POSTGRES_USER
+              value: technova
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: technova-db-secret
+                  key: DB_PASSWORD
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "technova", "-d", "technova"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: technova-db-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: technova-db-service
+  namespace: technova
+spec:
+  type: ClusterIP
+  selector:
+    app: technova-db
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres

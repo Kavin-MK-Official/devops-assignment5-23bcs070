@@ -1,0 +1,10 @@
+# Ignore local secrets and generated state
+monitoring/.env
+*.env
+!*.env.example
+k8s/db-secret.yaml
+*.log
+__pycache__/
+.pytest_cache/
+*.pyc
+.terraform/
