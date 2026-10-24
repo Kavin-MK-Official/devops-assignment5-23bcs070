@@ -42,7 +42,7 @@ jobs:
               git {
                 remote {
                   url('https://github.com/Kavin-MK-Official/devops-assignment5-23bcs070.git')
-                  credentialsId('github-kavin')
+                  credentials('github-kavin')
                 }
                 branch('*/main')
               }

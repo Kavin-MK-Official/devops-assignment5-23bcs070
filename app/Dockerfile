@@ -10,13 +10,11 @@
 ARG PYTHON_VERSION=3.12-slim
 
 # ---- Stage 1: build wheels for the Python dependencies --------------------
+# psycopg2-binary, flask, gunicorn and prometheus-client all publish wheels,
+# so no compiler is needed - the builder only prepares wheels for the runtime.
 FROM python:${PYTHON_VERSION} AS builder
 
 WORKDIR /build
-
-RUN apt-get update \
- && apt-get install -y --no-install-recommends gcc libpq-dev \
- && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt

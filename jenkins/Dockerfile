@@ -8,7 +8,7 @@ FROM jenkins/jenkins:lts-jdk17
 USER root
 
 ARG KUBECTL_VERSION=v1.34.1
-ARG KIND_VERSION=v0.30.0
+ARG KIND_VERSION=v0.33.0
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
@@ -23,12 +23,12 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends docker-ce-cli \
  && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSLo /usr/local/bin/kubectl \
-      "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" \
- && chmod 0755 /usr/local/bin/kubectl \
- && curl -fsSLo /usr/local/bin/kind \
-      "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64" \
- && chmod 0755 /usr/local/bin/kind
+# kubectl and kind are copied from the host toolchain by scripts/bootstrap.sh
+# (jenkins/bin/). Downloading them inside the build proved unreliable on this
+# network, and the host binaries are the exact versions used for the lab.
+COPY bin/kubectl bin/kind /usr/local/bin/
+RUN chmod 0755 /usr/local/bin/kubectl /usr/local/bin/kind \
+ && kubectl version --client
 
 RUN python3 -m pip install --no-cache-dir --break-system-packages ansible-core \
  && ansible --version | head -2

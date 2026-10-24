@@ -16,17 +16,30 @@ log "1. Preflight: docker, kubectl, kind, ansible"
 docker version --format 'Docker server : {{.Server.Version}}'
 kubectl version --client -o json | python3 -c 'import json,sys; print("kubectl       :", json.load(sys.stdin)["clientVersion"]["gitVersion"])'
 kind version
-ansible --version | head -1
+ANSIBLE_BIN="${ANSIBLE_BIN:-$HOME/.venvs/ansible/bin/ansible}"
+[ -x "$ANSIBLE_BIN" ] || ANSIBLE_BIN="$(command -v ansible || true)"
+if [ -n "$ANSIBLE_BIN" ]; then "$ANSIBLE_BIN" --version | head -1; else echo "ansible       : not in PATH (used inside Jenkins image)"; fi
 mkdir -p "$STATE_DIR"
 
 log "2. Build the Jenkins controller image"
-docker build -t jenkins-technova:1.0 jenkins
+if docker image inspect jenkins-technova:1.0 >/dev/null 2>&1; then
+  echo "jenkins-technova:1.0 already built (set FORCE_JENKINS_BUILD=1 to rebuild)"
+else
+  mkdir -p jenkins/bin
+  cp "$(command -v kubectl)" jenkins/bin/kubectl
+  cp "$(command -v kind)" jenkins/bin/kind
+  ls -l jenkins/bin
+  docker build -t jenkins-technova:1.0 jenkins
+fi
 
 log "3. Create the kind cluster (NodePort 30080->8081, 30081->8082)"
+# kindest/node v1.37.0 segfaults in kubeadm on this WSL kernel; v1.34.0 is the
+# newest stable node image that initialises reliably here.
+K8S_IMAGE="${K8S_IMAGE:-kindest/node:v1.34.0}"
 if kind get clusters | grep -qx "$CLUSTER"; then
   echo "cluster $CLUSTER already exists"
 else
-  kind create cluster --config kind-config.yaml --name "$CLUSTER"
+  kind create cluster --config kind-config.yaml --name "$CLUSTER" --image "$K8S_IMAGE"
 fi
 kubectl cluster-info --context "kind-$CLUSTER"
 
